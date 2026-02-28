@@ -388,6 +388,33 @@
                 <input type="number" id="photoSize" value="150" onchange="setPhotoSizeManual(this.value)" style="width:60px; text-align:center;">
                 <button class="btn-icon" onclick="adjustPhotoSize(10)">➕</button>
             </div>
+
+             <!-- BAGIAN BARU: SETTING UKURAN & KARTU -->
+    <div class="sidebar-section">
+        <h3>📏 Pengaturan Kartu</h3>
+        <label>Ukuran Kartu:</label>
+        <div class="row">
+            <select id="sizeSelect" onchange="saveState(); checkCustomSize(); updateDimension()" style="flex: 2;">
+                <option value="10x7">10x7 cm</option>
+                <option value="9x6">9x6 cm</option>
+                <option value="custom">Custom (cm)</option>
+            </select>
+            <button class="btn-icon" onclick="saveState(); rotateCard(90)">↻</button>
+        </div>
+        <div id="customSizeInputs" class="row" style="display:none;">
+            <input type="number" id="customW" placeholder="L" value="10" onchange="saveState(); updateDimension()">
+            <input type="number" id="customH" placeholder="T" value="7" onchange="saveState(); updateDimension()">
+        </div>
+
+        <label>Gap Cetak (mm):</label>
+        <div class="row">
+            <button class="btn-icon" onclick="adjustGap(-1)">➖</button>
+            <input type="number" id="printGap" value="0" style="text-align:center;">
+            <button class="btn-icon" onclick="adjustGap(1)">➕</button>
+        </div>
+        
+        <button class="btn-danger" onclick="resetAll()" style="width:100%; margin-top:5px;">🔄 Reset Semua Desain</button>
+    </div>
             
             <label>Orientasi Kartu:</label>
             <div class="row">
@@ -465,24 +492,44 @@
             <input type="file" onchange="uploadFont(this)" style="margin-top:5px;" title="Upload font .ttf/.otf">
         </div>
 
-        <div class="sidebar-section" style="border:none;">
-            <h3>🖨️ Cetak & Export</h3>
+        <!-- BAGIAN 3: CETAK & EXPORT (Dipindahkan dari atas) -->
+    <div class="sidebar-section" style="border:none;">
+        <h3>🖨️ Cetak & Export</h3>
+        
+        <label>No. Invoice / Order:</label>
+        <input type="text" id="printOrderId" placeholder="INV-001" style="margin-bottom:10px;">
+
+        <label>Kertas & Jumlah:</label>
+        <div class="row">
+            <select id="paperSize" style="flex: 1.5;">
+                <option value="A3+">A3+</option>
+                <option value="A3">A3</option>
+                <option value="A4">A4</option>
+                <option value="F4">F4</option>
+            </select>
+            <input type="number" id="printQty" value="25" style="flex: 1; text-align: center;">
+        </div>
+
+        <button id="btnArrLayout" class="btn-print-now" onclick="modeCetak()" style="width:100%; margin-bottom:10px; padding:12px;">🖨️ Susun Cetak Otomatis</button>
+
+        <div class="row">
+            <button class="btn-info" onclick="saveAsPDF()">PDF</button>
+            <button class="btn-success" onclick="saveAsImage()">PNG</button>
+        </div>
 
             <button class="btn-print-mod" style="background: var(--input-bg); border:1px solid var(--primary-color); color:var(--primary-color);" onclick="openLogModal()">📜 Riwayat Cetak</button>
             
             <div class="row" style="margin-top:10px; gap:5px;">
-                <button id="btnUndo" class="btn-warning" onclick="undo()" title="Undo" disabled>↩</button>
-                <button id="btnRedo" class="btn-warning" onclick="redo()" title="Redo" disabled>↪</button>
+                <button id="btnUndo" class="btn-warning" onclick="undo()">↩ Undo</button>
+                <button id="btnRedo" class="btn-warning" onclick="redo()">Redo ↪</button>
             </div>
-            
             <button class="btn-print-mod" style="background: #6c757d;" onclick="generateTemplateCode()">🛠️ Export Kode</button>
             
             <div id="sidebarPrintActions">
-                <div style="background: rgba(100, 255, 218, 0.1); padding: 10px; border-radius: 5px; border: 1px dashed var(--primary-color); text-align: center; margin-bottom: 5px; font-size: 11px;">
-                    Mode Cetak Aktif
-                </div>
-                <button class="btn-print-now" onclick="window.print()" style="padding: 12px; font-size: 13px;">🖨️ Print Sekarang</button>
-                <button class="btn-back" onclick="modeEdit()" style="padding: 12px; font-size: 13px;">⬅️ Edit Kembali</button>
+                <div style="background: rgba(100, 255, 218, 0.1); padding: 10px; border-radius: 5px; border: 1px dashed var(--primary-color); text-align: center; margin-bottom: 5px; font-size: 11px; color:white;">Mode Cetak Aktif</div>
+                <button class="btn-print-now" onclick="window.print()">🖨️ Print Sekarang</button>
+
+                <button class="btn-back" onclick="modeEdit()">⬅️ Kembali Edit</button>
             </div>
         </div>
     </div>
@@ -492,131 +539,58 @@
     </div>
 
     <div class="main-area" id="mainArea">
-        <div class="form-panel">
-            
-            <div class="form-group">
-                <label>1. Ukuran Kartu</label>
-                <div class="row" style="margin:0; height: 100%;">
-                    <select id="sizeSelect" onchange="saveState(); checkCustomSize(); updateDimension()" style="flex: 2;">
-                        <option value="10x7">10x7 cm</option>
-                        <option value="9x6">9x6 cm</option>
-                        <option value="custom">Custom (cm)</option>
-                    </select>
-                    <button class="btn-icon" onclick="saveState(); rotateCard(-90)">↺</button>
-                    <button class="btn-icon" onclick="saveState(); resetRotation()">0°</button>
-                    <button class="btn-icon" onclick="saveState(); rotateCard(90)">↻</button>
-                </div>
-                <div id="customSizeInputs" class="row">
-                    <input type="number" id="customW" placeholder="L (cm)" value="8" onchange="saveState(); updateDimension()">
-                    <span style="color:var(--primary-color);">x</span>
-                    <input type="number" id="customH" placeholder="T (cm)" value="5" onchange="saveState(); updateDimension()">
-                </div>
+       <div class="form-panel" style="grid-template-columns: repeat(5, 1fr);">
+    <div class="form-group">
+                <label>1. Nama Anak</label>
+                <textarea id="inpName" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-name')"></textarea>
             </div>
-
             <div class="form-group">
                 <label>2. Nama Orang Tua</label>
-                <textarea id="inpParents" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-parents')" onclick="saveState()">Sawalia & Fadilah</textarea>
+                <textarea id="inpParents" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-parents')"></textarea>
             </div>
-
             <div class="form-group">
-                <label>3. Detail Lahir</label>
-                <textarea id="inpDetails" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-details')" onclick="saveState()">Lahir: Bogor, 8 Juni 2019</textarea>
+                <label>3. Judul Utama</label>
+                <textarea id="inpTitle1" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-title')"></textarea>
             </div>
-
             <div class="form-group">
-                <label>4. Doa / Kata Mutiara</label>
-                <textarea id="inpPrayer" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-prayer')" onclick="saveState()"></textarea>
+                <label>4. Detail Lahir</label>
+                <textarea id="inpDetails" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-details')"></textarea>
             </div>
-
             <div class="form-group">
-                <label>5. Reset</label>
-                <button class="btn-danger" onclick="resetAll()" style="height: 38px; width: 100%;">🔄 Reset All</button>
-            </div>
-
-            <div class="form-group">
-                <label>6. Load Template</label>
-                <div class="row" style="margin:0; height: 100%;">
-                    <input type="text" id="inputCode" placeholder="Contoh: B015" style="flex: 3; text-transform:uppercase; font-weight:bold; color:var(--primary-color); border:1px solid var(--primary-color); height: 38px;">
+                <label>5. Load Template</label>
+                <div class="row" style="margin:0;">
+                    <input type="text" id="inputCode" placeholder="Kode" style="flex: 1.5; height: 38px; text-transform: uppercase;">
                     <button class="btn-primary" onclick="loadByCode()" style="flex: 1; height: 38px;">CARI</button>
                 </div>
             </div>
 
+            <!-- BARIS 2 -->
             <div class="form-group">
-                <label>7. Nama Anak</label>
-                <textarea id="inpName" class="inp-std" style="font-weight:bold;" oninput="syncText()" onfocus="focusElement('txt-name')" onclick="saveState()"></textarea>
+                <label>6. Sub Judul</label>
+                <textarea id="inpTitle2" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-title-sub')"></textarea>
             </div>
-
             <div class="form-group">
-                <label>8. Judul Utama</label>
-                <textarea id="inpTitle1" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-title')" onclick="saveState()"></textarea>
+                <label>7. Intro Text</label>
+                <textarea id="inpIntro" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-intro')"></textarea>
             </div>
-
+            <div class="form-group">
+                <label>8. Doa / Kata Mutiara</label>
+                <textarea id="inpPrayer" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-prayer')"></textarea>
+            </div>
             <div class="form-group">
                 <label>9. Footer (Bawah)</label>
-                <textarea id="inpFooter" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-footer')" onclick="saveState()">Kami yang berbahagia</textarea>
+                <textarea id="inpFooter" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-footer')"></textarea>
             </div>
-
             <div class="form-group">
-                <label>10. Intro Text</label>
-                <textarea id="inpIntro" class="inp-std" oninput="syncText()" onfocus="focusElement('txt-intro')" onclick="saveState()"></textarea>
-            </div>
-
-
-            <div class="form-group intro-buttons-group">
-                <label>11. Print Layout</label>
-                <button id="btnArrLayout" class="btn-print-now" onclick="modeCetak()" style="height: 42px; width: 100%;">🖨️ Susun Cetak</button>
-            </div>
-
-            <div class="form-group paper-quantity-group">
-                <label>📄 12. Kertas & Jumlah</label>
-                <div class="row" style="margin:0; height: 100%;">
-                    <select id="paperSize" style="flex: 1; height: 42px;">
-                        <option value="A3+">A3+</option>
-                        <option value="A3">A3</option>
-                        <option value="A4">A4</option>
-                        <option value="F4">F4</option>
-                    </select>
-                    <input type="number" id="printQty" value="25" min="1" style="flex: 1; height: 42px; text-align: center;">
+                <label>10. Jenis Kelamin</label>
+                <div class="row" style="margin:0;">
+                    <button id="btnBoy" class="btn-gender-l active" onclick="setGender('L')" style="height:38px;">Laki</button>
+                    <button id="btnGirl" class="btn-gender-p" onclick="setGender('P')" style="height:38px;">Prpuan</button>
                 </div>
             </div>
-            
-            <div class="form-group">
-                <label>13. Sub Judul</label>
-                <textarea id="inpTitle2" class="inp-std" placeholder="(Portrait)" oninput="syncText()" onfocus="focusElement('txt-title-sub')" onclick="saveState()"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>14. Jenis Kelamin</label>
-                <div class="row" style="margin:0; height: 100%;">
-                    <button id="btnBoy" class="btn-gender-l active" onclick="saveState(); setGender('L')" style="flex: 1; height: 38px;">Laki</button>
-                    <button id="btnGirl" class="btn-gender-p" onclick="saveState(); setGender('P')" style="flex: 1; height: 38px;">Prpuan</button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>15. Simpan File</label>
-                <div class="row" style="margin:0; height: 100%;">
-                    <button class="btn-info" onclick="saveAsPDF()" style="flex: 1; height: 42px;">PDF</button>
-                    <button class="btn-success" onclick="saveAsImage()" style="flex: 1; height: 42px;">PNG</button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>16. No. Inv (Opsional)</label>
-                <input type="text" id="printOrderId" placeholder="INV-001" style="height: 38px;">
-            </div>
-
         </div>
 
-        <div class="form-group">
-    <label>17. Gap Cetak (mm)</label>
-    <div class="row" style="margin:0; height: 100%;">
-        <button class="btn-icon" onclick="adjustGap(-1)">➖</button>
-        <input type="number" id="printGap" value="0" min="0" max="10" style="text-align:center; height: 38px;">
-        <button class="btn-icon" onclick="adjustGap(1)">➕</button>
-    </div>
-</div>
-
+        <!-- AREA KANVAS -->
         <div class="workspace-scroll">
             <div class="canvas-container" id="rotator">
                 <div id="card-wrapper" class="layout-landscape">
@@ -626,10 +600,10 @@
                         <div class="movable-txt txt-title-sub" id="outTitle2">Sub</div>
                         <div class="movable-txt txt-intro" id="outIntro">Intro</div>
                         <div class="movable-txt txt-name" id="outName">NAMA</div>
-                        <div class="movable-txt txt-details" id="outDetails">Lahir: Bogor, 8 Juni 2019</div>
+                        <div class="movable-txt txt-details" id="outDetails">Detail Lahir</div>
                         <div class="movable-txt txt-prayer" id="outPrayer">Doa</div>
-                        <div class="movable-txt txt-footer" id="outFooter">Kami yang berbahagia</div>
-                        <div class="movable-txt txt-parents" id="outParents">Sawalia & Fadilah</div>
+                        <div class="movable-txt txt-footer" id="outFooter">Footer</div>
+                        <div class="movable-txt txt-parents" id="outParents">Orang Tua</div>
                     </div>
                 </div>
             </div>
