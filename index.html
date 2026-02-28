@@ -501,14 +501,21 @@
 
         <label>Kertas & Jumlah:</label>
         <div class="row">
-            <select id="paperSize" style="flex: 1.5;">
+            <!-- Tambahkan onchange="checkCustomPaperSize()" -->
+    <select id="paperSize" style="flex: 1.5;" onchange="checkCustomPaperSize()">
                 <option value="A3+">A3+</option>
                 <option value="A3">A3</option>
                 <option value="A4">A4</option>
                 <option value="F4">F4</option>
+                 <option value="custom">Custom Paper (mm)</option> <!-- Tambah ini -->
             </select>
             <input type="number" id="printQty" value="25" style="flex: 1; text-align: center;">
         </div>
+        <!-- Tambahkan kontainer input custom paper ini -->
+<div id="customPaperInputs" class="row" style="display:none; gap: 5px; margin-top: -5px; margin-bottom: 10px;">
+    <input type="number" id="paperCustomW" placeholder="Lebar mm" value="210" style="font-size: 10px;">
+    <input type="number" id="paperCustomH" placeholder="Tinggi mm" value="297" style="font-size: 10px;">
+</div>
 
         <button id="btnArrLayout" class="btn-print-now" onclick="modeCetak()" style="width:100%; margin-bottom:10px; padding:12px;">🖨️ Susun Cetak Otomatis</button>
 
@@ -769,6 +776,16 @@
                 inputs.style.display = 'none';
             }
         }
+
+        function checkCustomPaperSize() {
+    const sel = document.getElementById('paperSize').value;
+    const inputs = document.getElementById('customPaperInputs');
+    if (sel === 'custom') {
+        inputs.style.display = 'flex';
+    } else {
+        inputs.style.display = 'none';
+    }
+}
 
         function setPhotoSizeManual(val) {
             let size = parseInt(val);
@@ -1918,10 +1935,16 @@ el.style.transform = 'translateX(-50%)';
     
     let scale = isRotated90 ? Math.min(cellW_px / hPx, cellH_px / wPx) : Math.min(cellW_px / wPx, cellH_px / hPx);
     
-    let paperW_mm = 297; 
-    if(paperType === 'A3+') paperW_mm = 329; 
-    if(paperType === 'A4') paperW_mm = 210; 
-    if(paperType === 'F4') paperW_mm = 215;
+   let paperW_mm;
+if (paperType === 'custom') {
+    paperW_mm = parseFloat(document.getElementById('paperCustomW').value) || 210;
+} else {
+    if (paperType === 'A3+') paperW_mm = 329;
+    else if (paperType === 'A3') paperW_mm = 297;
+    else if (paperType === 'A4') paperW_mm = 210;
+    else if (paperType === 'F4') paperW_mm = 215;
+    else paperW_mm = 210; // Default A4
+}
 
     // Hitung kolom berdasarkan lebar kertas dan lebar cell + gap
     let cols = Math.floor((paperW_mm - 10) / cellW_mm); 
